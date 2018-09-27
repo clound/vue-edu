@@ -31,11 +31,10 @@ export default {}
   height: 50px
   bottom: 0
   display: flex
-  font-size: $f12
   background: #fff
   box-shadow 0 3px 8px rgba(0,0,0,.15)
   border-top: 1px solid #eee
-  z-index 100
+  z-index 10
   .tab-item
     flex: 1
     text-align: center

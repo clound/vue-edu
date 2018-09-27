@@ -1,21 +1,29 @@
 <template>
   <div id="questiontest">
-    <h3 class="pick-info">你选择的题目是：{{picked}}{{pickedBox}}</h3>
-    <form action="" class="question">
-      <div v-for="(it, v) in ExamInfo" :key="v"
-       v-show="currentIndex === it.questionID">
+    <div class="header">
+      <i class="iconfont icon-fanhui back" @click="back"></i>
+      <span>你选择的题目是：{{picked}}{{pickedBox}}</span>
+    </div>
+    <div v-for="(it, v) in ExamInfo" :key="v"
+      v-show="currentIndex === it.questionID" class="question">
+      <div class="wraper">
         <h3 class="qus-title" :data-id="it.questionID">{{it.questionID}}、{{it.questionTitle}}</h3>
-          <ul class="qus-list">
-            <li v-for="(item, index) in it.quesitions" :key="index"
-            :class="{'li-focus' : chooseNum==index}">
-              <input v-if="it.isMulti" type="checkbox" :value="item.code" :id="'choice1'+index" v-model="pickedBox">
-              <input v-else type="radio" :value="item.code" :id="'choice1'+index" v-model="picked">
-              <label :for="'choice1'+index" class="choice-item">{{item.code}}、{{item.desc}}</label>
-            </li>
-          </ul>
-        </div>
-    </form>
-    <div class="btn btn-active">提交</div>
+        <ul class="qus-list">
+          <li v-for="(item, index) in it.quesitions" :key="index">
+            <input v-if="it.isMulti" type="checkbox" :value="item.code" :id="'choice1'+v+index" v-model="chooseData[v]['pickedBox']">
+            <input v-else type="radio" :value="item.code" :id="'choice1'+v+index" v-model="chooseData[v]['picked']">
+            <label :for="'choice1'+v+index" class="choice-item border-1px">{{item.code}}、{{item.desc}}</label>
+          </li>
+        </ul>
+      </div>
+      <div class="btn"
+        :class="chooseData[v]['isChoosed']?'btn-active':'btn-grey'"
+        v-if="currentIndex <= 14"
+        @click="goNext">下一题</div>
+      <div v-else class="btn"
+        :class="chooseData[v]['isChoosed']?'btn-active':'btn-grey'"
+        @click="send">提交</div>
+    </div>
   </div>
 </template>
 <script>
@@ -28,28 +36,81 @@ export default {
       picked: '',
       pickedBox: [],
       ExamInfo: [],
-      unclickable: true, // 判断是否已选择答案，不选择不能下一题，并置灰按钮
-      showLayer: false, // 是否显示弹层
-      layerItem: {
-        isQuestion: false,
-        isSubmit: false, // 是否是最后一道题时触发“下一题"按钮，点击了提交
-        isSuccess: false,
-        isLoading: false
-      },
-      chooseNum: null,
-      isFocus: false,
-      isLast: false,
-      isClicked: false // 是否已经点击下一题，防止二次提交
+      chooseData: []
     }
   },
   created() {
     this._getQuestion()
   },
+  watch: {
+    chooseData: {
+      handler (newval) {
+        let tmp = newval[this.currentIndex - 1]
+        if (tmp.isMulti) {
+          if (tmp.pickedBox.length) {
+            tmp.isChoosed = true
+          } else {
+            tmp.isChoosed = false
+          }
+        } else {
+          if (tmp.picked) {
+            tmp.isChoosed = true
+          } else {
+            tmp.isChoosed = false
+          }
+        }
+      },
+      deep: true
+    }
+  },
   methods: {
     _getQuestion() {
       getQuestion().then((response) => {
         this.ExamInfo = response.data.data.res
+        this.chooseData = this.ExamInfo.map((item, index) => {
+          if (item.isMulti) {
+            return {
+              isMulti: item.isMulti,
+              id: item.questionID,
+              isChoosed: false,
+              pickedBox: []
+            }
+          } else {
+            return {
+              isMulti: item.isMulti,
+              id: item.questionID,
+              isChoosed: false,
+              picked: ''
+            }
+          }
+        })
       })
+    },
+    goNext() {
+      console.log(this.chooseData)
+      let len = this.ExamInfo.length
+      let bool = this.chooseData[this.currentIndex - 1]['isMulti']
+      let curData = this.chooseData[this.currentIndex - 1]
+      if (bool === true) {
+        if (!curData.pickedBox.length) {
+          this.$alert('未选题')
+          return
+        }
+      } else {
+        if (!curData.picked) {
+          this.$alert('未选题1')
+          return
+        }
+      }
+      if (this.currentIndex <= len) {
+        this.currentIndex += 1
+      }
+    },
+    send() {
+      this.$alert('提交成功')
+    },
+    back() {
+      this.$router.push('/')
     }
   }
 }
@@ -64,20 +125,28 @@ export default {
     width 100%
     height 100%
     background $purple-color
-    .pick-info
+    z-index 100
+    .header
+      position relative
       text-align center
-      font-size 18px
-      line-height 2
+      color #fff
+      line-height 50px
+      .back
+        position absolute
+        left 10px
+        color #fff
+        font-size $font-size-large-x
   .zhangshi
     padding .1rem .35rem
     color #fff
     font-size .28rem
   .question
-    position relative
-    padding 40px 20px 40px
-    margin 25px 15px 15px
-    border-radius 15px
-    background #fff
+    .wraper
+      position relative
+      padding 40px 20px 40px
+      margin 25px 15px 15px
+      border-radius 15px
+      background #fff
     .qus-title
       font-size: 19px;
       line-height: 30px;

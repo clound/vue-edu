@@ -1,6 +1,8 @@
 <template>
-  <found-header></found-header>
-  <!-- <div>我的防线</div> -->
+  <section>
+    <found-header></found-header>
+    <router-link to="/exam">答题</router-link>
+  </section>
 </template>
 <script>
 import FoundHeader from 'base/header/found-header'
