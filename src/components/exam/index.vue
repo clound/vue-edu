@@ -1,14 +1,16 @@
 <template>
   <div id="questiontest">
-    <h3 class="pick-info">你选择的题目是：{{picked}}</h3>
+    <h3 class="pick-info">你选择的题目是：{{picked}}{{pickedBox}}</h3>
     <form action="" class="question">
-      <div>
-        <h3 class="qus-title" :data-id="state.ExamInfo.QuestionID">{{state.ExamInfo.ExamQuestionNo}}、{{state.ExamInfo.Description}}</h3>
+      <div v-for="(it, v) in ExamInfo" :key="v"
+       v-show="currentIndex === it.questionID">
+        <h3 class="qus-title" :data-id="it.questionID">{{it.questionID}}、{{it.questionTitle}}</h3>
           <ul class="qus-list">
-            <li v-for="(item, index) in state.ExamInfo.QuestionAnswerCode" :key="index"
+            <li v-for="(item, index) in it.quesitions" :key="index"
             :class="{'li-focus' : chooseNum==index}">
-              <input type="radio" :value="item.Code" :id="'choice1'+index" v-model="picked">
-              <label :for="'choice1'+index" class="choice-item">{{item.Code}}、{{item.Description}}</label>
+              <input v-if="it.isMulti" type="checkbox" :value="item.code" :id="'choice1'+index" v-model="pickedBox">
+              <input v-else type="radio" :value="item.code" :id="'choice1'+index" v-model="picked">
+              <label :for="'choice1'+index" class="choice-item">{{item.code}}、{{item.desc}}</label>
             </li>
           </ul>
         </div>
@@ -17,33 +19,15 @@
   </div>
 </template>
 <script>
+import { getQuestion } from '@/api/exam'
 export default {
   name: 'questiontest',
   data () {
     return {
+      currentIndex: 1,
       picked: '',
       pickedBox: [],
-      state: {
-        dataUrl: '',
-        progress: '',
-        PersonID: '',
-        ExamInfo: {
-          QuestionID: 1,
-          ExamQuestionNo: 'A',
-          Description: '终于说到最后拿响应结果,，这无非就是根据响应结果弹层而已',
-          QuestionAnswerCode: [{
-            Code: 'A',
-            Description: '數學'
-          }, {
-            Code: 'B',
-            Description: '英語'
-          }, {
-            Code: 'C',
-            Description: '語文'
-          }]
-        },
-        TeamID: ''
-      },
+      ExamInfo: [],
       unclickable: true, // 判断是否已选择答案，不选择不能下一题，并置灰按钮
       showLayer: false, // 是否显示弹层
       layerItem: {
@@ -56,6 +40,16 @@ export default {
       isFocus: false,
       isLast: false,
       isClicked: false // 是否已经点击下一题，防止二次提交
+    }
+  },
+  created() {
+    this._getQuestion()
+  },
+  methods: {
+    _getQuestion() {
+      getQuestion().then((response) => {
+        this.ExamInfo = response.data.data.res
+      })
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="tab">
-    <router-link tag="div" class="tab-item" to="/articles">
+    <router-link tag="div" class="tab-item" to="/found">
       <i class="iconfont icon-mofabang"></i>
       <span class="tab-link">发现</span>
     </router-link>
